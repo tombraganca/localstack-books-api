@@ -19,81 +19,100 @@
     <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
   <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
 </p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
+# Projeto NestJS com DynamoDB (Usando LocalStack)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Este projeto é uma API básica para gerenciar livros, desenvolvida com NestJS e usando o DynamoDB como banco de dados. Para facilitar o desenvolvimento local, o DynamoDB é simulado via LocalStack em um contêiner Docker, dispensando o acesso à AWS real.
 
-## Project setup
+## Requisitos
 
-```bash
-$ npm install
+- Node.js >= 14.x
+- Docker
+- AWS CLI (para comandos de inicialização do DynamoDB localmente)
+
+## Configuração do Ambiente
+
+1. Clone o Repositório:
+
+```sh
+git clone <URL-do-repositorio>
+cd <nome-do-repositorio>
 ```
 
-## Compile and run the project
+2. Instale as Dependências:
 
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+```sh
+npm install
 ```
 
-## Run tests
+3. Configuração das Variáveis de Ambiente:
 
-```bash
-# unit tests
-$ npm run test
+Crie um arquivo .env na raiz do projeto e configure as variáveis de ambiente:
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+```text
+AWS_REGION=us-east-1
+AWS_ACCESS_KEY_ID=test
+AWS_SECRET_ACCESS_KEY=test
+DYNAMODB_ENDPOINT=http://localhost:4566
 ```
 
-## Deployment
+## Inicialização do LocalStack
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+1.  Inicie o LocalStack com Docker Compose:
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g mau
-$ mau deploy
+```sh
+docker-compose up -d
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Isso irá configurar o LocalStack com o DynamoDB rodando na porta 4566.
 
-## Resources
+2. Crie a Tabela DynamoDB (Books):
 
-Check out a few resources that may come in handy when working with NestJS:
+Para criar a tabela Books no LocalStack, execute o comando abaixo no terminal (dentro do contêiner ou fora dele):
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```sh
+aws dynamodb create-table \
+    --table-name Books \
+    --attribute-definitions AttributeName=id,AttributeType=S \
+    --key-schema AttributeName=id,KeyType=HASH \
+    --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 \
+    --region us-east-1 \
+    --endpoint-url http://localhost:4566
+```
 
-## Support
+## Executando a Aplicação NestJS
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Para rodar o servidor NestJS:
 
-## Stay in touch
+```sh
+npm run start:dev
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+A API estará disponível em http://localhost:3000.
 
-## License
+## Endpoints
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+- POST /books: Adiciona um livro ao banco de dados.
+
+  - **Exemplo de Payload:**
+
+```json
+{
+  "id": "1",
+  "title": "Exemplo de Livro",
+  "author": "Autor Exemplo"
+}
+```
+
+- GET /books: Retorna todos os livros cadastrados.
+
+## Notas
+
+- Certifique-se de que o LocalStack esteja ativo antes de iniciar a aplicação NestJS.
+- Caso o comando aws dynamodb retorne um erro de região, adicione --region us-east-1 ao comando ou configure usando aws configure.
+
+## Tecnologias Utilizadas
+
+- NestJS: Framework para construção de APIs.
+- DynamoDB (LocalStack): Banco de dados NoSQL, simulado via LocalStack.
+- AWS SDK: Biblioteca para integração com a AWS.
